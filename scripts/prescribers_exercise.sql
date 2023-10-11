@@ -126,11 +126,28 @@ ORDER BY tot_spent DESC;
 -- 5. 
 --     a. How many CBSAs are in Tennessee? **Warning:** The cbsa table contains information for all states, not just Tennessee.
 
+SELECT COUNT(*)
+FROM CBSA
+WHERE cbsaname LIKE '%TN%'
 
+--Answer: 56
 
 --     b. Which cbsa has the largest combined population? Which has the smallest? Report the CBSA name and total population.
 
+SELECT
+	c.cbsaname,
+	SUM(p.population) AS tot_pop
+FROM cbsa AS c
+INNER JOIN population AS p
+USING(fipscounty)
+GROUP BY c.cbsaname
+ORDER BY tot_pop;
+
+--ANSWER: Highest: Nashville 1,830,410 LOWEST: Morristown 116,352
+
 --     c. What is the largest (in terms of population) county which is not included in a CBSA? Report the county name and population.
+
+
 
 -- 6. 
 --     a. Find all rows in the prescription table where total_claims is at least 3000. Report the drug_name and the total_claim_count.
