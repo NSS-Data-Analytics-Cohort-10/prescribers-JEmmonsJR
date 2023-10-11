@@ -8,9 +8,10 @@ FROM prescriber AS pr
 INNER JOIN prescription AS pn
 USING(npi)
 GROUP BY pr.npi
-ORDER BY tot_claims DESC;
+ORDER BY tot_claims DESC
+LIMIT 1;
 
---ANSWER: npi:1881634483 total claims: 99707
+--ANSWER: npi:1881634483 total claims: 99,707
     
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
 
@@ -28,12 +29,37 @@ GROUP BY
 	pr.nppes_provider_first_name,
 	pr.nppes_provider_last_org_name,
 	pr.specialty_description
-ORDER BY tot_claims DESC;
+ORDER BY tot_claims DESC
+LIMIT 1;
 
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
 
+SELECT 
+	pr.specialty_description,
+	SUM(pn.total_claim_count) AS tot_claims
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+GROUP BY pr.specialty_description
+ORDER BY tot_claims DESC
+LIMIT 1;
+
+--ANSWER: Family Practice; 9,752,347
 --     b. Which specialty had the most total number of claims for opioids?
+
+SELECT 
+	pr.specialty_description,
+	SUM(pn.total_claim_count) AS tot_claims
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+INNER JOIN drug
+USING(drug_name)
+WHERE LOWER(drug.opioid_drug_flag) LIKE 'y'
+GROUP BY pr.specialty_description
+ORDER BY tot_claims DESC
+LIMIT 1;
 
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
@@ -42,7 +68,26 @@ ORDER BY tot_claims DESC;
 -- 3. 
 --     a. Which drug (generic_name) had the highest total drug cost?
 
+SELECT
+	d.generic_name,
+	CAST(SUM(p.total_drug_cost) AS MONEY) AS tot_drug_cost
+FROM prescription AS p
+LEFT JOIN drug AS d
+USING(drug_name)
+GROUP BY d.generic_name
+ORDER BY tot_drug_cost DESC
+LIMIT 1;
+
 --     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
+
+SELECT
+	d.generic_name,
+	ROUND(p.total_drug_cost/p.total_day_supply, 2) AS cost_per_day
+FROM prescription AS p
+LEFT JOIN drug AS d
+USING(drug_name)
+ORDER BY cost_per_day DESC
+LIMIT 1;
 
 -- 4. 
 --     a. For each drug in the drug table, return the drug name and then a column named 'drug_type' which says 'opioid' for drugs which have opioid_drug_flag = 'Y', says 'antibiotic' for those drugs which have antibiotic_drug_flag = 'Y', and says 'neither' for all other drugs.
