@@ -1,7 +1,34 @@
 -- 1. 
 --     a. Which prescriber had the highest total number of claims (totaled over all drugs)? Report the npi and the total number of claims.
+
+SELECT 
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claims
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+GROUP BY pr.npi
+ORDER BY tot_claims DESC;
+
+--ANSWER: npi:1881634483 total claims: 99707
     
 --     b. Repeat the above, but this time report the nppes_provider_first_name, nppes_provider_last_org_name,  specialty_description, and the total number of claims.
+
+SELECT 
+	pr.npi,
+	pr.nppes_provider_first_name,
+	pr.nppes_provider_last_org_name,
+	pr.specialty_description,
+	SUM(pn.total_claim_count) AS tot_claims
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+GROUP BY
+	pr.npi,
+	pr.nppes_provider_first_name,
+	pr.nppes_provider_last_org_name,
+	pr.specialty_description
+ORDER BY tot_claims DESC;
 
 -- 2. 
 --     a. Which specialty had the most total number of claims (totaled over all drugs)?
