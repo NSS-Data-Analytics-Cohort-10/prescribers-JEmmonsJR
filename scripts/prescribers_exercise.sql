@@ -78,24 +78,55 @@ GROUP BY d.generic_name
 ORDER BY tot_drug_cost DESC
 LIMIT 1;
 
+--ANSWER:Insulin; 104,264,066.35
+
 --     b. Which drug (generic_name) has the hightest total cost per day? **Bonus: Round your cost per day column to 2 decimal places. Google ROUND to see how this works.**
 
 SELECT
 	d.generic_name,
-	ROUND(p.total_drug_cost/p.total_day_supply, 2) AS cost_per_day
+	ROUND(SUM(p.total_drug_cost)/SUM(p.total_day_supply), 2) AS cost_per_day
 FROM prescription AS p
 LEFT JOIN drug AS d
 USING(drug_name)
+GROUP BY d.generic_name
 ORDER BY cost_per_day DESC
 LIMIT 1;
+
+--ANSWER: C1 Esterase Inhibitor $3,495.22
 
 -- 4. 
 --     a. For each drug in the drug table, return the drug name and then a column named 'drug_type' which says 'opioid' for drugs which have opioid_drug_flag = 'Y', says 'antibiotic' for those drugs which have antibiotic_drug_flag = 'Y', and says 'neither' for all other drugs.
 
+SELECT
+	drug_name,
+	CASE
+		WHEN opioid_drug_flag LIKE 'Y' THEN 'opioid'
+		WHEN antibiotic_drug_flag LIKE 'Y' THEN 'antibiotic'
+		ELSE 'neither'
+		END AS drug_type
+FROM drug;
+
 --     b. Building off of the query you wrote for part a, determine whether more was spent (total_drug_cost) on opioids or on antibiotics. Hint: Format the total costs as MONEY for easier comparision.
+
+SELECT
+	CASE
+		WHEN opioid_drug_flag LIKE 'Y' THEN 'opioid'
+		WHEN antibiotic_drug_flag LIKE 'Y' THEN 'antibiotic'
+		ELSE 'neither'
+		END AS drug_type,
+	CAST(SUM(p.total_drug_cost) AS MONEY) AS tot_spent
+FROM drug AS d
+LEFT JOIN prescription AS p
+USING(drug_name)
+GROUP BY drug_type
+ORDER BY tot_spent DESC;
+
+--ANSWER: Spent the most on Opioids; $105,080,626,37
 
 -- 5. 
 --     a. How many CBSAs are in Tennessee? **Warning:** The cbsa table contains information for all states, not just Tennessee.
+
+
 
 --     b. Which cbsa has the largest combined population? Which has the smallest? Report the CBSA name and total population.
 
