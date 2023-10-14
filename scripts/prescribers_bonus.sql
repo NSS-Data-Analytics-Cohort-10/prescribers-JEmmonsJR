@@ -63,10 +63,102 @@ LIMIT 5;
 
 -- 3. Your goal in this question is to generate a list of the top prescribers in each of the major metropolitan areas of Tennessee.
 --     a. First, write a query that finds the top 5 prescribers in Nashville in terms of the total number of claims (total_claim_count) across all drugs. Report the npi, the total number of claims, and include a column showing the city.
-    
+
+SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+WHERE LOWER(pr.nppes_provider_city) = 'nashville'
+GROUP BY pr.npi
+ORDER BY tot_claim DESC
+LIMIT 5;
+
+-- --ANSWER: 
+-- 1538103692	53622
+-- 1497893556	29929
+-- 1659331924	26013
+-- 1881638971	25511
+-- 1962499582	23703
+	
 --     b. Now, report the same for Memphis.
-    
+
+SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+FROM prescriber AS pr
+INNER JOIN prescription AS pn
+USING(npi)
+WHERE LOWER(pr.nppes_provider_city) = 'memphis'
+GROUP BY pr.npi
+ORDER BY tot_claim DESC
+LIMIT 5;
+
+--ANSWER:
+-- 1346291432	65659
+-- 1225056872	62301
+-- 1801896881	40169
+-- 1669470316	39491
+-- 1275601346	36190
+
 --     c. Combine your results from a and b, along with the results for Knoxville and Chattanooga.
+
+SELECT
+	pr.nppes_provider_city,
+	n.*,
+	m.*,
+	k.*,
+	c.*
+FROM prescriber AS pr
+INNER JOIN 
+	(SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+	FROM prescriber AS pr
+	INNER JOIN prescription AS pn
+	USING(npi)
+	WHERE LOWER(pr.nppes_provider_city) = 'nashville'
+	GROUP BY pr.npi
+	ORDER BY tot_claim DESC
+	LIMIT 5) AS n
+USING(npi)
+FULL OUTER JOIN 
+	(SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+	FROM prescriber AS pr
+	INNER JOIN prescription AS pn
+	USING(npi)
+	WHERE LOWER(pr.nppes_provider_city) = 'memphis'
+	GROUP BY pr.npi
+	ORDER BY tot_claim DESC
+	LIMIT 5) AS m
+USING(npi)
+FULL OUTER JOIN 
+	(SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+	FROM prescriber AS pr
+	INNER JOIN prescription AS pn
+	USING(npi)
+	WHERE LOWER(pr.nppes_provider_city) = 'knoxville'
+	GROUP BY pr.npi
+	ORDER BY tot_claim DESC
+	LIMIT 5) AS k
+USING(npi)
+FULL OUTER JOIN 
+	(SELECT
+	pr.npi,
+	SUM(pn.total_claim_count) AS tot_claim
+	FROM prescriber AS pr
+	INNER JOIN prescription AS pn
+	USING(npi)
+	WHERE LOWER(pr.nppes_provider_city) = 'chattanooga'
+	GROUP BY pr.npi
+	ORDER BY tot_claim DESC
+	LIMIT 5) AS c
+USING(npi)
 
 -- 4. Find all counties which had an above-average number of overdose deaths. Report the county name and number of overdose deaths.
 
