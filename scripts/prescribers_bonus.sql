@@ -105,13 +105,13 @@ LIMIT 5;
 --     c. Combine your results from a and b, along with the results for Knoxville and Chattanooga.
 
 SELECT
-	pr.nppes_provider_city,
+	pr.nppes_provider_city AS city,
 	n.*,
 	m.*,
 	k.*,
 	c.*
 FROM prescriber AS pr
-INNER JOIN 
+LEFT JOIN 
 	(SELECT
 	pr.npi,
 	SUM(pn.total_claim_count) AS tot_claim
@@ -123,7 +123,7 @@ INNER JOIN
 	ORDER BY tot_claim DESC
 	LIMIT 5) AS n
 USING(npi)
-FULL OUTER JOIN 
+LEFT JOIN 
 	(SELECT
 	pr.npi,
 	SUM(pn.total_claim_count) AS tot_claim
@@ -135,7 +135,7 @@ FULL OUTER JOIN
 	ORDER BY tot_claim DESC
 	LIMIT 5) AS m
 USING(npi)
-FULL OUTER JOIN 
+LEFT JOIN 
 	(SELECT
 	pr.npi,
 	SUM(pn.total_claim_count) AS tot_claim
@@ -147,7 +147,7 @@ FULL OUTER JOIN
 	ORDER BY tot_claim DESC
 	LIMIT 5) AS k
 USING(npi)
-FULL OUTER JOIN 
+LEFT JOIN 
 	(SELECT
 	pr.npi,
 	SUM(pn.total_claim_count) AS tot_claim
@@ -159,6 +159,11 @@ FULL OUTER JOIN
 	ORDER BY tot_claim DESC
 	LIMIT 5) AS c
 USING(npi)
+WHERE n.tot_claim IS NOT NULL
+OR m.tot_claim IS NOT NULL
+OR k.tot_claim IS NOT NULL
+OR c.tot_claim IS NOT NULL
+ORDER BY city DESC, n.tot_claim DESC, m.tot_claim DESC, k.tot_claim DESC, c.tot_claim DESC;
 
 -- 4. Find all counties which had an above-average number of overdose deaths. Report the county name and number of overdose deaths.
 
