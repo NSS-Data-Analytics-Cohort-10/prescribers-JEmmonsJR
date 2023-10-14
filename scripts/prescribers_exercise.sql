@@ -63,8 +63,55 @@ LIMIT 1;
 
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
 
+SELECT
+	pr.specialty_description AS specialty,
+	COUNT(pn.drug_name) AS drug_count
+FROM prescriber AS pr
+LEFT JOIN prescription AS pn
+USING(npi)
+GROUP BY pr.specialty_description
+HAVING COUNT(pn.drug_name) = 0;
+
 --     d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
 
+
+CREATE TEMP TABLE tot_op AS
+SELECT 
+	pr.specialty_description,
+	SUM(pn.total_claim_count) AS tot_op_claim
+FROM prescriber AS pr
+LEFT JOIN prescription AS pn
+USING(npi)
+LEFT JOIN drug AS d
+USING(drug_name)
+WHERE d.opioid_drug_flag = 'Y'
+GROUP BY pr.specialty_description;
+
+SELECT 
+	pr.specialty_description,
+	(t.tot_op_claim/SUM(pn.total_claim_count))*100 AS percentage
+FROM prescriber AS pr
+LEFT JOIN prescription AS pn
+USING(npi)
+LEFT JOIN tot_op AS t
+USING(specialty_description)
+GROUP BY pr.specialty_description, t.tot_op_claim
+ORDER BY percentage DESC;
+
+DROP TABLE tot_op_claim;
+
+--ANSWER: Case Manager/Care Corrdinator 72%
+
+-- SELECT
+-- 	pr.specialty_description AS specialty,
+-- 	pn.total_claim_count/SUM(pn.total_claim_count)
+-- FROM prescriber AS pr
+-- INNER JOIN prescription AS pn
+-- USING(npi)
+-- INNER JOIN drug
+-- USING(drug_name)
+-- GROUP BY pr.specialty_description, pn.total_claim_count
+	
 -- 3. 
 --     a. Which drug (generic_name) had the highest total drug cost?
 
